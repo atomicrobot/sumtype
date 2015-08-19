@@ -13,9 +13,9 @@ class SumTypeType {
 
     @Override
     public String toString() {
-        return "SumTypeType{" +
-                "typeName=" + typeName +
-                ", name='" + name + '\'' +
-                '}';
+        return "SumTypeType{"
+                + "typeName=" + typeName
+                + ", name='" + name + '\''
+                + '}';
     }
 }

@@ -19,10 +19,10 @@ class SumTypeFields {
 
     @Override
     public String toString() {
-        return "SumTypeFields{" +
-                "packageName='" + packageName + '\'' +
-                ", typeName='" + typeName + '\'' +
-                ", types=" + types +
-                '}';
+        return "SumTypeFields{"
+                + "packageName='" + packageName + '\''
+                + ", typeName='" + typeName + '\''
+                + ", types=" + types
+                + '}';
     }
 }

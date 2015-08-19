@@ -9,8 +9,8 @@ public class Error {
 
     @Override
     public String toString() {
-        return "Error{" +
-                "message='" + message + '\'' +
-                '}';
+        return "Error{"
+                + "message='" + message + '\''
+                + '}';
     }
 }

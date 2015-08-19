@@ -2,7 +2,11 @@ package com.madebyatomicrobot.sumtype.compiler;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Joiner;
-import com.squareup.javapoet.*;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeSpec;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,7 +69,10 @@ class SumTypeWriter {
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .returns(ClassName.bestGuess(generatedClassName))
                 .addParameter(sumTypeType.typeName, sumTypeType.name)
-                .addStatement(buildStaticFactoryMethodStatement(typeIndex, totalTypes), generatedClassName, sumTypeType.name)
+                .addStatement(
+                        buildStaticFactoryMethodStatement(typeIndex, totalTypes),
+                        generatedClassName,
+                        sumTypeType.name)
                 .build();
     }
 
