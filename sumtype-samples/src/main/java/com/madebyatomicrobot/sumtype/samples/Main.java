@@ -25,6 +25,11 @@ public class Main implements QuerySumTypeVisitor {
     }
 
     @Override
+    public void visitProgress(int progress) {
+        System.out.println("Progress: " + progress);
+    }
+
+    @Override
     public void visitResults(Results results) {
         System.out.println(results.toString());
     }

@@ -1,6 +1,5 @@
 package com.madebyatomicrobot.sumtype.compiler;
 
-import com.google.common.base.CaseFormat;
 import com.google.common.base.Joiner;
 import com.squareup.javapoet.*;
 
@@ -46,7 +45,7 @@ class SumTypeWriter {
             SumTypeType sumTypeType = parsed.types.get(i);
 
             constructorBuilder
-                    .addParameter(sumTypeType.getNonVoidTypeName(), sumTypeType.name)
+                    .addParameter(sumTypeType.getObjectType(), sumTypeType.name)
                     .addStatement("this.$L = $L", sumTypeType.name, sumTypeType.name);
 
             builder.addField(buildSumTypeField(sumTypeType));
@@ -81,9 +80,9 @@ class SumTypeWriter {
 
     private CodeBlock buildStaticFactoryMethodImplementation(int typeIndex, int totalTypes, SumTypeType sumTypeType) {
         CodeBlock.Builder builder = CodeBlock.builder();
-        if (!sumTypeType.isVoidType()) {
+        if (!sumTypeType.isVoidType() && !sumTypeType.isPrimitiveType()) {
             builder.beginControlFlow("if ($L == null)", sumTypeType.name);
-            builder.addStatement("throw new NullPointerException()");
+            builder.addStatement("throw new IllegalArgumentException()");
             builder.endControlFlow();
         }
 
@@ -109,7 +108,7 @@ class SumTypeWriter {
     }
 
     private FieldSpec buildSumTypeField(SumTypeType sumTypeType) {
-        return FieldSpec.builder(sumTypeType.getNonVoidTypeName(), sumTypeType.name, Modifier.FINAL, Modifier.PRIVATE).build();
+        return FieldSpec.builder(sumTypeType.getObjectType(), sumTypeType.name, Modifier.FINAL, Modifier.PRIVATE).build();
     }
 
     private MethodSpec buildSumTypeInterfaceImplementation(SumTypeType sumTypeType) {
@@ -117,6 +116,14 @@ class SumTypeWriter {
                 .returns(sumTypeType.typeName)
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Override.class);
+
+        CodeBlock.Builder codeBuilder = CodeBlock.builder();
+        codeBuilder.beginControlFlow("if ($L == null)", sumTypeType.name);
+        codeBuilder.addStatement("throw new $T()", IllegalStateException.class);
+        codeBuilder.endControlFlow();
+
+        builder.addCode(codeBuilder.build());
+
         if (!sumTypeType.isVoidType()) {
             builder.addStatement("return $L", sumTypeType.name);
         }
