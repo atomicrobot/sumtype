@@ -1,46 +1,55 @@
 package com.madebyatomicrobot.sumtype.samples;
 
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import com.madebyatomicrobot.sumtype.samples.QuerySumType.QuerySumTypeVisitor;
 
 import java.util.Arrays;
-import java.util.List;
 
-public class Main implements QuerySumTypeVisitor {
+public class Main {
     public static void main(String[] argv) {
-        List<QuerySumType> values = Arrays.asList(
-                QuerySumType.ofLoading(new Loading()),
-                QuerySumType.ofNetworkUnavailable(),
-                QuerySumType.ofError(new Error("Error")),
-                QuerySumType.ofResults(new Results(Arrays.asList("Apple", "Orange", "Pear"))));
-
-        Main main = new Main();
-        for (QuerySumType querySumType : values) {
-            querySumType.accept(main);
-        }
+        new Main().runShowDemo();
     }
 
-    @Override
-    public void visitLoading(Loading loading) {
-        System.out.println(loading.toString());
+    private EventBus bus = new EventBus();
+
+    private void runShowDemo() {
+        bus.register(this);
+
+        bus.post(QuerySumType.ofNetworkUnavailable());
+        bus.post(QuerySumType.ofLoading(new Loading()));
+        bus.post(QuerySumType.ofProgress(50));
+        bus.post(QuerySumType.ofError(new Error("Oh snap!")));
+        bus.post(QuerySumType.ofResults(new Results(Arrays.asList("Apple", "Orange", "Pear"))));
     }
 
-    @Override
-    public void visitProgress(int progress) {
-        System.out.println("Progress: " + progress);
-    }
+    @Subscribe
+    public void handleQuerySumType(QuerySumType querySumType) {
+        querySumType.accept(new QuerySumTypeVisitor() {
+            @Override
+            public void visitLoading(Loading loading) {
+                System.out.println(loading.toString());
+            }
 
-    @Override
-    public void visitResults(Results results) {
-        System.out.println(results.toString());
-    }
+            @Override
+            public void visitProgress(int progress) {
+                System.out.println("Progress: " + progress);
+            }
 
-    @Override
-    public void visitError(Error error) {
-        System.out.println(error.toString());
-    }
+            @Override
+            public void visitResults(Results results) {
+                System.out.println(results.toString());
+            }
 
-    @Override
-    public void visitNetworkUnavailable() {
-        System.out.println("Network unavailable.");
+            @Override
+            public void visitError(Error error) {
+                System.out.println(error.toString());
+            }
+
+            @Override
+            public void visitNetworkUnavailable() {
+                System.out.println("Network unavailable.");
+            }
+        });
     }
 }
