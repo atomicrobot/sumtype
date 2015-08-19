@@ -6,16 +6,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 class SumTypeType {
-    private static final Map<TypeName, TypeName> primitiveMap = new HashMap<TypeName, TypeName>();
+    private static final Map<TypeName, TypeName> PRIMITIVE_MAP = new HashMap<TypeName, TypeName>();
     static {
-        primitiveMap.put(TypeName.BYTE, TypeName.get(Byte.class));
-        primitiveMap.put(TypeName.SHORT, TypeName.get(Short.class));
-        primitiveMap.put(TypeName.INT, TypeName.get(Integer.class));
-        primitiveMap.put(TypeName.LONG, TypeName.get(Long.class));
-        primitiveMap.put(TypeName.FLOAT, TypeName.get(Float.class));
-        primitiveMap.put(TypeName.DOUBLE, TypeName.get(Double.class));
-        primitiveMap.put(TypeName.BOOLEAN, TypeName.get(Boolean.class));
-        primitiveMap.put(TypeName.CHAR, TypeName.get(Character.class));
+        PRIMITIVE_MAP.put(TypeName.BYTE, TypeName.get(Byte.class));
+        PRIMITIVE_MAP.put(TypeName.SHORT, TypeName.get(Short.class));
+        PRIMITIVE_MAP.put(TypeName.INT, TypeName.get(Integer.class));
+        PRIMITIVE_MAP.put(TypeName.LONG, TypeName.get(Long.class));
+        PRIMITIVE_MAP.put(TypeName.FLOAT, TypeName.get(Float.class));
+        PRIMITIVE_MAP.put(TypeName.DOUBLE, TypeName.get(Double.class));
+        PRIMITIVE_MAP.put(TypeName.BOOLEAN, TypeName.get(Boolean.class));
+        PRIMITIVE_MAP.put(TypeName.CHAR, TypeName.get(Character.class));
     }
 
     final TypeName typeName;
@@ -40,7 +40,7 @@ class SumTypeType {
         }
 
         if (typeName.isPrimitive()) {
-            return primitiveMap.get(typeName);
+            return PRIMITIVE_MAP.get(typeName);
         }
 
         return typeName;

@@ -102,13 +102,15 @@ class SumTypeWriter {
 
         String formattedParameters = Joiner.on(", ").join(parameters);
         String statementFormat = String.format("return new $L(%s)", formattedParameters);
+        String name = sumTypeType.isVoidType() ? "voidPlaceholder" : sumTypeType.name;
         return CodeBlock.builder()
-                .addStatement(statementFormat, generatedClassName, sumTypeType.isVoidType() ? "voidPlaceholder" : sumTypeType.name)
+                .addStatement(statementFormat, generatedClassName, name)
                 .build();
     }
 
     private FieldSpec buildSumTypeField(SumTypeType sumTypeType) {
-        return FieldSpec.builder(sumTypeType.getObjectType(), sumTypeType.name, Modifier.FINAL, Modifier.PRIVATE).build();
+        TypeName typeName = sumTypeType.getObjectType();
+        return FieldSpec.builder(typeName, sumTypeType.name, Modifier.FINAL, Modifier.PRIVATE).build();
     }
 
     private MethodSpec buildSumTypeInterfaceImplementation(SumTypeType sumTypeType) {
