@@ -3,7 +3,6 @@ package com.madebyatomicrobot.sumtype.compiler;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Joiner;
 import com.squareup.javapoet.*;
-import com.sun.org.apache.bcel.internal.classfile.Code;
 
 import java.io.IOException;
 import java.util.ArrayList;
