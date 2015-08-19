@@ -4,24 +4,87 @@
 
 Sum Type is an annotation processor that makes it simple to emulate sum types in Java via visitors.
 
+See https://en.wikipedia.org/wiki/Tagged_union for an in depth explanation of sum types, read on, or check out the samples.
+
 Motivation
 ==========
 
-TODO
+Java lacks support for sum types which can be useful.  We can get close with a composite value object and a visitor, but
+that implementation is cumbersome to write and maintain.
 
 Usage
 =====
 
-TODO
+Assuming you had three types (`Loading`, `Error`, `Results`) you wanted to capture in a sum type, create an interface
+ with those types and annoate it with `@SumType`
+
+```
+@SumType
+public interface Query {
+    Loading loading();
+    Results results();
+    Error error();
+}
+```
+
+This will generate several classes for you to use, most important being `QuerySumType` and `QuerySumTypeVisitor`.
+
+To build a new `QuerySumType`, the value holder, use one of the generated static factory methods:
+
+```
+QuerySumType query = QuerySumType.ofLoading(new Loading());
+```
+
+To ensure your code handles all of the cases a sum type can be in, pass in an implementation of a generated visitor interface.
+
+```
+query.accept(new QuerySumTypeVisitor() {
+    @Override
+    public void visitLoading(Loading loading) {
+        System.out.println(loading.toString());
+    }
+
+    @Override
+    public void visitResults(Results results) {
+        System.out.println(results.toString());
+    }
+
+    @Override
+    public void visitError(Error error) {
+        System.out.println(error.toString());
+    }
+});
+```
 
 ## Philosophy
 
-TODO
+Sum types are exceptionally useful when dealing with event based architectures and we would like to minimize the friction
+required to make use of them in a language where they are not a first class citizen.
 
 Including in your project
 =========================
 
-TODO
+```groovy
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+
+  dependencies {
+    // Or latest versions
+    classpath 'com.android.tools.build:gradle:1.1.2'
+    classpath 'com.neenbedankt.gradle.plugins:android-apt:1.4'  // Or your preferred apt plugin if not using Android (see samples)
+  }
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'android-apt'  // Or your preferred apt plugin if not using Android (see samples)
+
+dependencies {
+  apt 'com.madebyatomicrobot:sumtype-compiler:{latest-version}'
+  compile 'com.madebyatomicrobot:sumtype-annotations:{latest-version}'
+}
+```
 
 | Artifact | Latest Version |
 |------|---------|
@@ -31,16 +94,6 @@ TODO
 
 Snapshots of the development version are available in [Sonatype’s `snapshots` repository][snap].
 
-Alternatives
-============
-
-TODO
-
-
-Related Projects
-================
-
-TODO
 
 License
 =======
