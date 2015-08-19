@@ -1,0 +1,3 @@
+include ':sumtype-annotations',
+        ':sumtype-compiler',
+        ':sumtype-samples'

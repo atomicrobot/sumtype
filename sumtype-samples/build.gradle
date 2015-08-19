@@ -1,0 +1,21 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "net.ltgt.gradle:gradle-apt-plugin:0.3"
+    }
+}
+
+apply plugin: "net.ltgt.apt"
+apply plugin: 'java'
+apply plugin: 'idea'
+
+dependencies {
+    compile project(':sumtype-annotations')
+    apt project(':sumtype-compiler')
+}
+
+apply from: '../config/checkstyle/checkstyle.gradle'
