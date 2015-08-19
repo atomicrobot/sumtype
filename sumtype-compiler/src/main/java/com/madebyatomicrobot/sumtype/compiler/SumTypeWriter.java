@@ -2,11 +2,8 @@ package com.madebyatomicrobot.sumtype.compiler;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Joiner;
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.FieldSpec;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
+import com.sun.org.apache.bcel.internal.classfile.Code;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -69,11 +66,17 @@ class SumTypeWriter {
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .returns(ClassName.bestGuess(generatedClassName))
                 .addParameter(sumTypeType.typeName, sumTypeType.name)
-                .addStatement(
-                        buildStaticFactoryMethodStatement(typeIndex, totalTypes),
-                        generatedClassName,
-                        sumTypeType.name)
+                .addCode(buildStaticFactoryMethodImplementation(typeIndex, totalTypes, sumTypeType))
                 .build();
+    }
+
+    private CodeBlock buildStaticFactoryMethodImplementation(int typeIndex, int totalTypes, SumTypeType sumTypeType) {
+        CodeBlock.Builder builder = CodeBlock.builder();
+        builder.beginControlFlow("if ($L == null)", sumTypeType.name);
+        builder.addStatement("throw new NullPointerException()", sumTypeType.name);
+        builder.endControlFlow();
+        builder.addStatement(buildStaticFactoryMethodStatement(typeIndex, totalTypes), generatedClassName, sumTypeType.name);
+        return builder.build();
     }
 
     private String buildStaticFactoryMethodStatement(int typeIndex, int totalTypes) {
