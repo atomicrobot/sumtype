@@ -35,13 +35,18 @@ class SumTypeWriter {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addSuperinterface(sumTypeQualifiedClassName);
 
+        builder.addField(
+                FieldSpec.builder(Object.class, "voidPlaceholder", Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
+                        .initializer("new $T()", Object.class)
+                        .build());
+
         MethodSpec.Builder constructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PRIVATE);
 
         for (int i = 0; i < parsed.types.size(); i++) {
             SumTypeType sumTypeType = parsed.types.get(i);
 
             constructorBuilder
-                    .addParameter(sumTypeType.typeName, sumTypeType.name)
+                    .addParameter(sumTypeType.getNonVoidTypeName(), sumTypeType.name)
                     .addStatement("this.$L = $L", sumTypeType.name, sumTypeType.name);
 
             builder.addField(buildSumTypeField(sumTypeType));
@@ -61,24 +66,32 @@ class SumTypeWriter {
 
     private MethodSpec buildStaticFactoryMethod(int typeIndex, int totalTypes, SumTypeType sumTypeType) {
         String staticFactoryMethodName = "of" + getUpperCamelCaseName(sumTypeType);
-        return MethodSpec.methodBuilder(staticFactoryMethodName)
+        MethodSpec.Builder builder = MethodSpec.methodBuilder(staticFactoryMethodName)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                .returns(ClassName.bestGuess(generatedClassName))
-                .addParameter(sumTypeType.typeName, sumTypeType.name)
-                .addCode(buildStaticFactoryMethodImplementation(typeIndex, totalTypes, sumTypeType))
-                .build();
+                .returns(ClassName.bestGuess(generatedClassName));
+
+        if (!sumTypeType.isVoidType()) {
+            builder.addParameter(sumTypeType.typeName, sumTypeType.name);
+        }
+
+        builder.addCode(buildStaticFactoryMethodImplementation(typeIndex, totalTypes, sumTypeType));
+
+        return builder.build();
     }
 
     private CodeBlock buildStaticFactoryMethodImplementation(int typeIndex, int totalTypes, SumTypeType sumTypeType) {
         CodeBlock.Builder builder = CodeBlock.builder();
-        builder.beginControlFlow("if ($L == null)", sumTypeType.name);
-        builder.addStatement("throw new NullPointerException()", sumTypeType.name);
-        builder.endControlFlow();
-        builder.addStatement(buildStaticFactoryMethodStatement(typeIndex, totalTypes), generatedClassName, sumTypeType.name);
+        if (!sumTypeType.isVoidType()) {
+            builder.beginControlFlow("if ($L == null)", sumTypeType.name);
+            builder.addStatement("throw new NullPointerException()");
+            builder.endControlFlow();
+        }
+
+        builder.add(buildStaticFactoryMethodInstantiation(typeIndex, totalTypes, sumTypeType));
         return builder.build();
     }
 
-    private String buildStaticFactoryMethodStatement(int typeIndex, int totalTypes) {
+    private CodeBlock buildStaticFactoryMethodInstantiation(int typeIndex, int totalTypes, SumTypeType sumTypeType) {
         List<String> parameters = new ArrayList<String>();
         for (int i = 0; i < totalTypes; i++) {
             if (i == typeIndex) {
@@ -89,24 +102,26 @@ class SumTypeWriter {
         }
 
         String formattedParameters = Joiner.on(", ").join(parameters);
-        return String.format("return new $L(%s)", formattedParameters);
+        String statementFormat = String.format("return new $L(%s)", formattedParameters);
+        return CodeBlock.builder()
+                .addStatement(statementFormat, generatedClassName, sumTypeType.isVoidType() ? "voidPlaceholder" : sumTypeType.name)
+                .build();
     }
 
     private FieldSpec buildSumTypeField(SumTypeType sumTypeType) {
-        return FieldSpec.builder(
-                sumTypeType.typeName,
-                sumTypeType.name,
-                Modifier.FINAL, Modifier.PRIVATE)
-                .build();
+        return FieldSpec.builder(sumTypeType.getNonVoidTypeName(), sumTypeType.name, Modifier.FINAL, Modifier.PRIVATE).build();
     }
 
     private MethodSpec buildSumTypeInterfaceImplementation(SumTypeType sumTypeType) {
-        return MethodSpec.methodBuilder(sumTypeType.name)
+        MethodSpec.Builder builder = MethodSpec.methodBuilder(sumTypeType.name)
                 .returns(sumTypeType.typeName)
                 .addModifiers(Modifier.PUBLIC)
-                .addAnnotation(Override.class)
-                .addStatement("return $L", sumTypeType.name)
-                .build();
+                .addAnnotation(Override.class);
+        if (!sumTypeType.isVoidType()) {
+            builder.addStatement("return $L", sumTypeType.name);
+        }
+
+        return builder.build();
     }
 
     private MethodSpec buildVisitorAcceptMethod() {
@@ -116,13 +131,23 @@ class SumTypeWriter {
 
         for (int i = 0; i < parsed.types.size(); i++) {
             SumTypeType sumTypeType = parsed.types.get(i);
-
-            builder.beginControlFlow("if ($L != null)", sumTypeType.name);
-            builder.addStatement("visitor.$L($L)", buildVisitorMethodName(sumTypeType), sumTypeType.name);
-            builder.addStatement("return");
-            builder.endControlFlow();
+            builder.addCode(buildVisitorAcceptMethodImplementation(sumTypeType));
         }
 
+        return builder.build();
+    }
+
+    private CodeBlock buildVisitorAcceptMethodImplementation(SumTypeType sumTypeType) {
+        CodeBlock.Builder builder = CodeBlock.builder();
+        builder.beginControlFlow("if ($L != null)", sumTypeType.name);
+        if (sumTypeType.isVoidType()) {
+            builder.addStatement("visitor.$L()", buildVisitorMethodName(sumTypeType));
+        } else {
+            builder.addStatement("visitor.$L($L)", buildVisitorMethodName(sumTypeType), sumTypeType.name);
+        }
+
+        builder.addStatement("return");
+        builder.endControlFlow();
         return builder.build();
     }
 
@@ -132,16 +157,20 @@ class SumTypeWriter {
 
         for (int i = 0; i < parsed.types.size(); i++) {
             SumTypeType sumTypeType = parsed.types.get(i);
-
-            String methodName = buildVisitorMethodName(sumTypeType);
-            builder.addMethod(
-                    MethodSpec.methodBuilder(methodName)
-                            .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                            .addParameter(sumTypeType.typeName, sumTypeType.name)
-                            .build());
+            builder.addMethod(buildVisitorInterfaceMethod(sumTypeType));
         }
 
         return builder.build();
+    }
+
+    private MethodSpec buildVisitorInterfaceMethod(SumTypeType sumTypeType) {
+        String methodName = buildVisitorMethodName(sumTypeType);
+        MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(methodName)
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT);
+        if (!sumTypeType.isVoidType()) {
+            methodBuilder.addParameter(sumTypeType.typeName, sumTypeType.name);
+        }
+        return methodBuilder.build();
     }
 
     private String buildVisitorMethodName(SumTypeType sumTypeType) {
@@ -149,6 +178,6 @@ class SumTypeWriter {
     }
 
     private String getUpperCamelCaseName(SumTypeType sumTypeType) {
-        return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, sumTypeType.name);
+        return sumTypeType.name.substring(0, 1).toUpperCase() + sumTypeType.name.substring(1);
     }
 }

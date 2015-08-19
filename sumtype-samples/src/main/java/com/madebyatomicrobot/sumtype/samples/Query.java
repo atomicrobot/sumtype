@@ -7,4 +7,6 @@ public interface Query {
     Loading loading();
     Results results();
     Error error();
+
+    void networkUnavailable();
 }

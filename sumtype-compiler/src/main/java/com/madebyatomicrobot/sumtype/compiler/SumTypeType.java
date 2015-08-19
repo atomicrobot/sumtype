@@ -11,6 +11,14 @@ class SumTypeType {
         this.name = name;
     }
 
+    boolean isVoidType() {
+        return TypeName.VOID.equals(typeName);
+    }
+
+    TypeName getNonVoidTypeName() {
+        return isVoidType() ? TypeName.get(Object.class) : typeName;
+    }
+
     @Override
     public String toString() {
         return "SumTypeType{"
