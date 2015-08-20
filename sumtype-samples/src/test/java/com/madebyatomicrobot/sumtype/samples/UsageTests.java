@@ -18,7 +18,7 @@ public class UsageTests {
             }
         });
 
-        querySumType = QuerySumType.ofProgress(50);
+        querySumType = QuerySumType.ofProgress(50);  // SUPPRESS CHECKSTYLE MagicNumber
         querySumType.accept(new FailByDefaultVisitor() {
             @Override
             public void visitProgress(int progress) {
@@ -81,8 +81,8 @@ public class UsageTests {
 
     @Test
     public void testPrimitive() {
-        QuerySumType querySumType = QuerySumType.ofProgress(50);
-        assertEquals(50, querySumType.progress());
+        QuerySumType querySumType = QuerySumType.ofProgress(50);  // SUPPRESS CHECKSTYLE MagicNumber
+        assertEquals(50, querySumType.progress());  // SUPPRESS CHECKSTYLE MagicNumber
     }
 
     private static class FailByDefaultVisitor implements QuerySumType.QuerySumTypeVisitor {

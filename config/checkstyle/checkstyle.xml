@@ -19,6 +19,8 @@
     <module name="TreeWalker">
         <property name="cacheFile" value="${checkstyle.cache.file}"/>
 
+        <module name="FileContentsHolder"/>
+
         <!-- Checks for Javadoc comments.                     -->
         <!-- See http://checkstyle.sf.net/config_javadoc.html -->
         <!--module name="JavadocMethod"/-->
@@ -118,4 +120,6 @@
         <module name="TodoComment"/>
         <module name="UpperEll"/>
     </module>
+
+    <module name="SuppressWithNearbyCommentFilter"/>
 </module>
