@@ -10,6 +10,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import java.util.List;
 
 class SumTypeParser {
     private final Elements elements;
@@ -24,7 +25,6 @@ class SumTypeParser {
 
     // TODO
     // - Only on interfaces
-    // - Parent interfaces
 
     SumTypeFields parse() {
         String packageName = elements.getPackageOf(sumType).getQualifiedName().toString();
@@ -46,13 +46,21 @@ class SumTypeParser {
             }
         }
 
-        //parseParentInterfaces(parsed, typeElement);
+        parseParentInterfaces(parsed, typeElement);
     }
 
     private SumTypeType parseType(SumTypeFields parsed, ExecutableElement executableElement) {
         TypeMirror typeMirror = executableElement.getReturnType();
         Name name = executableElement.getSimpleName();
         return new SumTypeType(TypeName.get(typeMirror), name.toString());
+    }
+
+    private void parseParentInterfaces(SumTypeFields parsed, TypeElement typeElement) {
+        List<? extends TypeMirror> interfaces = typeElement.getInterfaces();
+        for (TypeMirror typeMirror : interfaces) {
+            TypeElement parentElement = (TypeElement) types.asElement(typeMirror);
+            parseTypeElement(parsed, parentElement);
+        }
     }
 
     private void parseError(String message) {

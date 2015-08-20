@@ -16,6 +16,8 @@ apply plugin: 'idea'
 dependencies {
     compile project(':sumtype-annotations')
     apt project(':sumtype-compiler')
+
+    testCompile 'junit:junit:4.12'
 }
 
 apply from: '../config/checkstyle/checkstyle.gradle'
