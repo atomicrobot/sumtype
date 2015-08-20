@@ -18,7 +18,7 @@ public class Main {
 
         bus.post(QuerySumType.ofNetworkUnavailable());
         bus.post(QuerySumType.ofLoading(new Loading()));
-        bus.post(QuerySumType.ofProgress(50));
+        bus.post(QuerySumType.ofProgress(50));  // SUPPRESS CHECKSTYLE MagicNumber
         bus.post(QuerySumType.ofError(new Error("Oh snap!")));
         bus.post(QuerySumType.ofResults(new Results(Arrays.asList("Apple", "Orange", "Pear"))));
     }
