@@ -21,10 +21,11 @@ class SumTypeParser {
         this.elements = elements;
         this.types = types;
         this.sumType = record;
-    }
 
-    // TODO
-    // - Only on interfaces
+        if (!sumType.getKind().isInterface()) {
+            parseError(String.format("%s must be an interface", sumType.getSimpleName().toString()));
+        }
+    }
 
     SumTypeFields parse() {
         String packageName = elements.getPackageOf(sumType).getQualifiedName().toString();
