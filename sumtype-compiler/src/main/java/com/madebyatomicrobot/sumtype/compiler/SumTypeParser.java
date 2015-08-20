@@ -32,6 +32,11 @@ class SumTypeParser {
         String typeName = sumType.getSimpleName().toString();
         SumTypeFields parsed = new SumTypeFields(packageName, typeName);
         parseTypeElement(parsed, sumType);
+
+        if (parsed.types.isEmpty()) {
+            parseError(String.format("%s must have at least one declared method", sumType.getSimpleName().toString()));
+        }
+
         return parsed;
     }
 
