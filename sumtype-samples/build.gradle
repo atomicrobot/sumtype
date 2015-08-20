@@ -18,6 +18,8 @@ dependencies {
     apt project(':sumtype-compiler')
 
     compile 'com.google.guava:guava:19.0-rc1'
+
+    testCompile 'junit:junit:4.12'
 }
 
 apply from: '../config/checkstyle/checkstyle.gradle'

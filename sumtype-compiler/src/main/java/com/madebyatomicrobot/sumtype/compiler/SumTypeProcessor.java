@@ -68,7 +68,6 @@ public class SumTypeProcessor extends AbstractProcessor {
         try {
             SumTypeParser parser = new SumTypeParser(elements, types, sumType);
             SumTypeFields parsed = parser.parse();
-            messager.printMessage(Kind.OTHER, parsed.toString());
             SumTypeWriter writer = new SumTypeWriter(parsed);
             writer.writeJava(filer);
         } catch (Exception ex) {

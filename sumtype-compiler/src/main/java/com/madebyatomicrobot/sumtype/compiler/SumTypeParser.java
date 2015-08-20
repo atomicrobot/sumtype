@@ -10,6 +10,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import java.util.List;
 
 class SumTypeParser {
     private final Elements elements;
@@ -20,17 +21,22 @@ class SumTypeParser {
         this.elements = elements;
         this.types = types;
         this.sumType = record;
-    }
 
-    // TODO
-    // - Only on interfaces
-    // - Parent interfaces
+        if (!sumType.getKind().isInterface()) {
+            parseError(String.format("%s must be an interface", sumType.getSimpleName().toString()));
+        }
+    }
 
     SumTypeFields parse() {
         String packageName = elements.getPackageOf(sumType).getQualifiedName().toString();
         String typeName = sumType.getSimpleName().toString();
         SumTypeFields parsed = new SumTypeFields(packageName, typeName);
         parseTypeElement(parsed, sumType);
+
+        if (parsed.types.isEmpty()) {
+            parseError(String.format("%s must have at least one declared method", sumType.getSimpleName().toString()));
+        }
+
         return parsed;
     }
 
@@ -46,13 +52,21 @@ class SumTypeParser {
             }
         }
 
-        //parseParentInterfaces(parsed, typeElement);
+        parseParentInterfaces(parsed, typeElement);
     }
 
     private SumTypeType parseType(SumTypeFields parsed, ExecutableElement executableElement) {
         TypeMirror typeMirror = executableElement.getReturnType();
         Name name = executableElement.getSimpleName();
         return new SumTypeType(TypeName.get(typeMirror), name.toString());
+    }
+
+    private void parseParentInterfaces(SumTypeFields parsed, TypeElement typeElement) {
+        List<? extends TypeMirror> interfaces = typeElement.getInterfaces();
+        for (TypeMirror typeMirror : interfaces) {
+            TypeElement parentElement = (TypeElement) types.asElement(typeMirror);
+            parseTypeElement(parsed, parentElement);
+        }
     }
 
     private void parseError(String message) {
